@@ -4,15 +4,16 @@ from arcade import PymunkPhysicsEngine
 from animated_player import PlayerState
 from game_sprites import Player
 
+SCALE = 3
 
 class MyGame(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
 
-        self.player = Player(center_x=1280 / 2, center_y=720 / 2, scale=1)
-
-        self.player_list = arcade.SpriteList()
-        self.player_list.append(self.player)
+        # self.player = Player(center_x=1280 / 2, center_y=720 / 2, scale=1)
+        #
+        # self.player_list = arcade.SpriteList()
+        # self.player_list.append(self.player)
 
         # Our TileMap Object
         self.tile_map = None
@@ -22,12 +23,18 @@ class MyGame(arcade.Window):
         # Doing this will make the SpriteList for the platforms layer
         # use spatial hashing for detection.
         layer_options = {
-            "Walls": {
+            "Bricks": {
                 "use_spatial_hash": True,
             },
         }
         # Read in the tiled map
-        self.tile_map = arcade.load_tilemap(map_name, 3, layer_options)
+        self.tile_map = arcade.load_tilemap(map_name, SCALE, layer_options)
+
+        player_position = self.tile_map.object_lists["Sprite Positions"][0].properties
+        self.player = Player(center_x=player_position["X"]*SCALE, center_y=player_position["Y"]*SCALE, scale=1)
+
+        self.player_list = arcade.SpriteList()
+        self.player_list.append(self.player)
 
         # Our Scene Object
         self.scene = None
@@ -37,16 +44,20 @@ class MyGame(arcade.Window):
 
         # Our physics engine
         self.physics_engine = None
-        # --- Other stuff
-
-        # for name, sprite_list in self.tile_map.object_lists.items():
-        #     self.scene.add_sprite_list(name=name, sprite_list=sprite_list)
 
         # Create the 'physics engine'
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player,
-            walls=self.scene["Walls"]
+            walls=self.scene["Bricks"]
         )
+
+    def object_layer_to_spritelist(self, object_layer) -> arcade.SpriteList:
+        temp_spritelist = arcade.SpriteList
+        for object in object_layer:
+            temp_spritelist.append(object)
+
+        return temp_spritelist
+
 
     def on_draw(self):
         self.clear()
@@ -56,7 +67,7 @@ class MyGame(arcade.Window):
         self.player_list.draw()
 
     def on_update(self, delta_time):
-        self.player.update()
+        self.physics_engine.update()
         self.player.update_animation()
 
     def on_key_press(self, key, modifiers):
