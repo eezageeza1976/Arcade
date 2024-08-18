@@ -10,10 +10,7 @@ class MyGame(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
 
-        # self.player = Player(center_x=1280 / 2, center_y=720 / 2, scale=1)
-        #
-        # self.player_list = arcade.SpriteList()
-        # self.player_list.append(self.player)
+        self.camera = None
 
         # Our TileMap Object
         self.tile_map = None
@@ -51,16 +48,11 @@ class MyGame(arcade.Window):
             walls=self.scene["Bricks"]
         )
 
-    def object_layer_to_spritelist(self, object_layer) -> arcade.SpriteList:
-        temp_spritelist = arcade.SpriteList
-        for object in object_layer:
-            temp_spritelist.append(object)
-
-        return temp_spritelist
-
+        self.camera = arcade.Camera2D([0, 0, width, height])
 
     def on_draw(self):
         self.clear()
+        self.camera.use()
 
         # Draw our Scene
         self.scene.draw()
